@@ -1,4 +1,4 @@
-package com.example.PaymentService.entity;
+package com.example.AuthService.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,7 +32,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    private ROLE role;
 
     @Column(nullable = false)
     private boolean enabled;
@@ -41,11 +41,4 @@ public class User {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
-
-    public enum Role {
-        USER,
-        ADMIN
-    }
 }
-

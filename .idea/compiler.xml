@@ -2,7 +2,8 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
-      <profile name="Annotation profile for NotificationService" enabled="true">
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Annotation profile for AuthService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -12,12 +13,14 @@
         <module name="NotificationService" />
         <module name="BookingService" />
         <module name="PaymentService" />
+        <module name="AuthService" />
         <module name="InventoryService" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="AuthService" options="-parameters" />
       <module name="BookingService" options="-parameters" />
       <module name="InventoryService" options="-parameters" />
       <module name="NotificationService" options="-parameters" />
