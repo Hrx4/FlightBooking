@@ -6,6 +6,7 @@ import com.example.AuthService.Dto.RegisterRequestDto;
 import com.example.AuthService.Entity.ROLE;
 import com.example.AuthService.Entity.User;
 import com.example.AuthService.Repository.UserRepository;
+import com.example.AuthService.Security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +21,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-//    private final JwtService jwtService;
+    private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
     @Override

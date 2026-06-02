@@ -1,4 +1,4 @@
-package com.example.AuthService.Service;
+package com.example.AuthService.Security;
 
 import com.example.AuthService.Entity.User;
 import com.example.AuthService.Repository.UserRepository;
