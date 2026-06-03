@@ -54,8 +54,6 @@ public class JwtService {
                 .before(new Date());
     }
 
-
-
     private Claims getClaims(String token){
         return Jwts.parser()
                 .verifyWith(getSignKey())
@@ -64,5 +62,15 @@ public class JwtService {
                 .getPayload();
     }
 
+    public String extractUserId(String token) {
 
+        return getClaims(token)
+                .get("userId", String.class);
+    }
+
+    public String extractRole(String token) {
+
+        return getClaims(token)
+                .get("role", String.class);
+    }
 }

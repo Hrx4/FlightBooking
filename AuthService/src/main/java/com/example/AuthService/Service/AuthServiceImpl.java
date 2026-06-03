@@ -5,6 +5,8 @@ import com.example.AuthService.Dto.LoginRequestDto;
 import com.example.AuthService.Dto.RegisterRequestDto;
 import com.example.AuthService.Entity.ROLE;
 import com.example.AuthService.Entity.User;
+import com.example.AuthService.Exception.UserAlreadyExistException;
+import com.example.AuthService.Exception.UserNotFoundException;
 import com.example.AuthService.Repository.UserRepository;
 import com.example.AuthService.Security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,10 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponseDto register(RegisterRequestDto request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new UserAlreadyExistException(
+                    "User already exists with email: "
+                            + request.getEmail()
+            );
         }
 
         User user = User.builder()
@@ -64,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
         );
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found for : " + request.getEmail()));
 
         String token = jwtService.generateToken(user);
 

@@ -6,10 +6,8 @@ import com.example.AuthService.Dto.RegisterRequestDto;
 import com.example.AuthService.Service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -30,5 +28,16 @@ public class AuthController {
             @Valid @RequestBody LoginRequestDto request) {
 
         return authService.login(request);
+    }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String adminOnly() {
+        return "Admin Access";
+    }
+
+    @GetMapping("/test")
+    public String test() {
+        return "Authenticated";
     }
 }
