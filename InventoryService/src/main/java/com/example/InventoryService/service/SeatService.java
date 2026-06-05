@@ -18,4 +18,10 @@ public interface SeatService {
             String flightId,
             String seatNumber
     );
+
+    public void lockSeat(
+            String flightId,
+            String seatNumber);
+
+
 }

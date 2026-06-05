@@ -3,18 +3,18 @@
   <component name="CompilerConfiguration">
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
-      <profile name="Annotation profile for AuthService" enabled="true">
+      <profile name="Annotation profile for InventoryService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="NotificationService" />
         <module name="BookingService" />
         <module name="PaymentService" />
-        <module name="AuthService" />
         <module name="InventoryService" />
+        <module name="AuthService" />
       </profile>
     </annotationProcessing>
   </component>

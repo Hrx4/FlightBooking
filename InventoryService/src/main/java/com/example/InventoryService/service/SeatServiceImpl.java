@@ -4,10 +4,15 @@ import com.example.InventoryService.dto.CreateSeatsRequest;
 import com.example.InventoryService.entity.Flight;
 import com.example.InventoryService.entity.Seat;
 import com.example.InventoryService.entity.SeatStatus;
+import com.example.InventoryService.exception.FlightNotFoundException;
+import com.example.InventoryService.exception.SeatAlreadyBookedException;
+import com.example.InventoryService.exception.SeatNotFoundException;
+import com.example.InventoryService.exception.SeatReservationConflictException;
 import com.example.InventoryService.repository.FlightRepository;
 import com.example.InventoryService.repository.SeatRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -58,32 +63,41 @@ public class SeatServiceImpl implements SeatService {
         seatRepository.saveAll(seats);
     }
 
-    @Override
+    @Transactional
     public void reserveSeat(
             String flightId,
             String seatNumber) {
 
-        Seat seat =
-                seatRepository
-                        .findByFlightIdAndSeatNumber(
-                                flightId,
-                                seatNumber
-                        )
-                        .orElseThrow(() ->
-                                new SeatNotFoundException(
-                                        "Seat not found"
-                                ));
+        try {
 
-        if(seat.getStatus() != SeatStatus.AVAILABLE) {
+            Seat seat =
+                    seatRepository
+                            .findByFlightIdAndSeatNumber(
+                                    flightId,
+                                    seatNumber
+                            )
+                            .orElseThrow(() ->
+                                    new SeatNotFoundException(
+                                            "Seat not found"
+                                    ));
 
-            throw new SeatAlreadyBookedException(
-                    "Seat already booked"
+            if(seat.getStatus() != SeatStatus.AVAILABLE) {
+
+                throw new SeatAlreadyBookedException(
+                        "Seat already booked"
+                );
+            }
+
+            seat.setStatus(SeatStatus.BOOKED);
+
+            seatRepository.save(seat);
+
+        } catch (ObjectOptimisticLockingFailureException ex) {
+
+            throw new SeatReservationConflictException(
+                    "Seat was booked by another user"
             );
         }
-
-        seat.setStatus(SeatStatus.BOOKED);
-
-        seatRepository.save(seat);
     }
 
     @Override
@@ -103,6 +117,31 @@ public class SeatServiceImpl implements SeatService {
                                 ));
 
         seat.setStatus(SeatStatus.AVAILABLE);
+
+        seatRepository.save(seat);
+    }
+
+    @Transactional
+    public void lockSeat(
+            String flightId,
+            String seatNumber) {
+
+        Seat seat =
+                seatRepository
+                        .findByFlightIdAndSeatNumber(
+                                flightId,
+                                seatNumber
+                        )
+                        .orElseThrow();
+
+        if(seat.getStatus() != SeatStatus.AVAILABLE) {
+
+            throw new SeatAlreadyBookedException(
+                    "Seat unavailable"
+            );
+        }
+
+        seat.setStatus(SeatStatus.LOCKED);
 
         seatRepository.save(seat);
     }

@@ -26,4 +26,7 @@ public class Seat {
 
     @Enumerated(EnumType.STRING)
     private SeatStatus status;
+
+    @Version
+    private Long version;
 }

@@ -2,6 +2,7 @@ package com.example.InventoryService.service;
 
 import com.example.InventoryService.dto.CreateFlightRequest;
 import com.example.InventoryService.entity.Flight;
+import com.example.InventoryService.exception.FlightNotFoundException;
 import com.example.InventoryService.repository.FlightRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

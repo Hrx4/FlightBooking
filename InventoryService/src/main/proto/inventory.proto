@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package inventory;
+
+service InventoryService {
+
+  rpc LockSeat(LockSeatRequest)
+      returns (LockSeatResponse);
+
+  rpc ConfirmSeat(ConfirmSeatRequest)
+      returns (ConfirmSeatResponse);
+
+  rpc ReleaseSeat(ReleaseSeatRequest)
+      returns (ReleaseSeatResponse);
+}
+
+message LockSeatRequest {
+
+  string flightId = 1;
+
+  string seatNumber = 2;
+}
+
+message LockSeatResponse {
+
+  bool success = 1;
+
+  string message = 2;
+}
+
+message ConfirmSeatRequest {
+
+  string flightId = 1;
+
+  string seatNumber = 2;
+}
+
+message ConfirmSeatResponse {
+
+  bool success = 1;
+
+  string message = 2;
+}
+
+message ReleaseSeatRequest {
+
+  string flightId = 1;
+
+  string seatNumber = 2;
+}
+
+message ReleaseSeatResponse {
+
+  bool success = 1;
+
+  string message = 2;
+}
