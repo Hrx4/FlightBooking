@@ -19,15 +19,15 @@
 		<java.version>21</java.version>
 		<grpc.version>1.63.0</grpc.version>
 		<protobuf-java.version>3.25.3</protobuf-java.version>
-		<spring-grpc.version>0.8.0</spring-grpc.version>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- Provides versions for grpc-stub, grpc-protobuf, grpc-netty-shaded, protobuf-java -->
 			<dependency>
-				<groupId>org.springframework.grpc</groupId>
-				<artifactId>spring-grpc-dependencies</artifactId>
-				<version>${spring-grpc.version}</version>
+				<groupId>io.grpc</groupId>
+				<artifactId>grpc-bom</artifactId>
+				<version>${grpc.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -53,11 +53,7 @@
 			<artifactId>spring-kafka</artifactId>
 		</dependency>
 
-		<!-- gRPC via Spring gRPC (manages grpc-stub, grpc-protobuf, netty internally) -->
-		<dependency>
-			<groupId>org.springframework.grpc</groupId>
-			<artifactId>spring-grpc-spring-boot-autoconfigure</artifactId>
-		</dependency>
+		<!-- gRPC -->
 		<dependency>
 			<groupId>net.devh</groupId>
 			<artifactId>grpc-server-spring-boot-starter</artifactId>
@@ -66,14 +62,22 @@
 		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-stub</artifactId>
+			<!-- version provided by grpc-bom -->
 		</dependency>
 		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-protobuf</artifactId>
+			<!-- version provided by grpc-bom -->
 		</dependency>
 		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-netty-shaded</artifactId>
+			<!-- version provided by grpc-bom -->
+		</dependency>
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>${protobuf-java.version}</version>  <!-- add this line -->
 		</dependency>
 
 		<!-- Fixes javax.annotation.Generated missing on Java 9+ -->
@@ -111,20 +115,15 @@
 	</dependencies>
 
 	<build>
-		<extensions>
-			<!-- Required by xolstice plugin for os-specific protoc binary; not needed here
-                 but harmless if kept. Remove if fully on ascopes plugin. -->
-		</extensions>
 		<plugins>
-			<!-- Single protobuf plugin: io.github.ascopes (modern, no os-maven-plugin needed) -->
 			<plugin>
 				<groupId>io.github.ascopes</groupId>
 				<artifactId>protobuf-maven-plugin</artifactId>
 				<version>2.6.1</version>
 				<configuration>
-					<protocVersion>${protobuf-java.version}</protocVersion>  <!-- was <protoc> -->
+					<protocVersion>${protobuf-java.version}</protocVersion>
 					<sourceDirectories>
-						<sourceDirectory>src/main/proto</sourceDirectory>  <!-- adjust to your actual path -->
+						<sourceDirectory>src/main/proto</sourceDirectory>
 					</sourceDirectories>
 					<binaryMavenPlugins>
 						<binaryMavenPlugin>
@@ -145,7 +144,6 @@
 				</executions>
 			</plugin>
 
-			<!-- Spring Boot plugin, excluding Lombok from fat jar -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -159,7 +157,6 @@
 				</configuration>
 			</plugin>
 
-			<!-- Compiler plugin with Lombok annotation processor -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>

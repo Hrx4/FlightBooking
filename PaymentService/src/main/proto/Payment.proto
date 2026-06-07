@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package payment;
+
+option java_multiple_files = true;
+
+service PaymentService {
+
+  rpc ProcessPayment(ProcessPaymentRequest)
+      returns (ProcessPaymentResponse);
+
+  rpc RefundPayment(RefundPaymentRequest)
+      returns (RefundPaymentResponse);
+
+  rpc GetPaymentStatus(GetPaymentStatusRequest)
+      returns (GetPaymentStatusResponse);
+}
+
+message ProcessPaymentRequest {
+
+  string bookingId = 1;
+
+  string userId = 2;
+
+  double amount = 3;
+}
+
+message ProcessPaymentResponse {
+
+  bool success = 1;
+
+  string paymentId = 2;
+
+  string status = 3;
+
+  string message = 4;
+}
+
+message RefundPaymentRequest {
+
+  string bookingId = 1;
+}
+
+message RefundPaymentResponse {
+
+  bool success = 1;
+
+  string message = 2;
+}
+
+message GetPaymentStatusRequest {
+
+  string bookingId = 1;
+}
+
+message GetPaymentStatusResponse {
+
+  string paymentId = 1;
+
+  string status = 2;
+}
