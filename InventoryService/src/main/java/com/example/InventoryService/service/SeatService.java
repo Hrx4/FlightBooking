@@ -23,5 +23,9 @@ public interface SeatService {
             String flightId,
             String seatNumber);
 
+    void confirmSeat(
+            String flightId,
+            String seatNumber
+    );
 
 }

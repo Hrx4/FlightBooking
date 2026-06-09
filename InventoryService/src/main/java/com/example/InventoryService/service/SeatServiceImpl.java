@@ -72,7 +72,7 @@ public class SeatServiceImpl implements SeatService {
 
             Seat seat =
                     seatRepository
-                            .findByFlightIdAndSeatNumber(
+                            .findByFlight_IdAndSeatNumber(
                                     flightId,
                                     seatNumber
                             )
@@ -101,47 +101,77 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
+    @Transactional
     public void releaseSeat(
             String flightId,
             String seatNumber) {
 
-        Seat seat =
-                seatRepository
-                        .findByFlightIdAndSeatNumber(
-                                flightId,
-                                seatNumber
-                        )
-                        .orElseThrow(() ->
-                                new SeatNotFoundException(
-                                        "Seat not found"
-                                ));
+        Seat seat = seatRepository
+                .findByFlight_IdAndSeatNumber(
+                        flightId,
+                        seatNumber
+                )
+                .orElseThrow(() ->
+                        new SeatNotFoundException(
+                                "Seat not found"
+                        ));
 
         seat.setStatus(SeatStatus.AVAILABLE);
 
         seatRepository.save(seat);
     }
 
+    @Override
     @Transactional
     public void lockSeat(
             String flightId,
             String seatNumber) {
 
-        Seat seat =
-                seatRepository
-                        .findByFlightIdAndSeatNumber(
-                                flightId,
-                                seatNumber
-                        )
-                        .orElseThrow();
+        Seat seat = seatRepository
+                .findByFlight_IdAndSeatNumber(
+                        flightId,
+                        seatNumber
+                )
+                .orElseThrow(() ->
+                        new SeatNotFoundException(
+                                "Seat not found"
+                        ));
 
         if(seat.getStatus() != SeatStatus.AVAILABLE) {
-
             throw new SeatAlreadyBookedException(
                     "Seat unavailable"
             );
         }
 
         seat.setStatus(SeatStatus.LOCKED);
+
+        seatRepository.save(seat);
+    }
+
+    @Override
+    @Transactional
+    public void confirmSeat(
+            String flightId,
+            String seatNumber) {
+
+        Seat seat = seatRepository
+                .findByFlight_IdAndSeatNumber(
+                        flightId,
+                        seatNumber
+                )
+                .orElseThrow(() ->
+                        new SeatNotFoundException(
+                                "Seat not found"
+                        ));
+
+        if(seat.getStatus() != SeatStatus.LOCKED) {
+
+            throw new RuntimeException(
+                    "Seat is not locked"
+            );
+        }
+
+        seat.setStatus(SeatStatus.BOOKED);
 
         seatRepository.save(seat);
     }

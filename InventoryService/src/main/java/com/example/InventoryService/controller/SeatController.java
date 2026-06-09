@@ -53,4 +53,32 @@ public class SeatController {
                 "Seat released successfully"
         );
     }
+
+    @PostMapping("/lock")
+    public ResponseEntity<String> lockSeat(
+            @RequestBody SeatReservationRequest request) {
+
+        seatService.lockSeat(
+                request.getFlightId(),
+                request.getSeatNumber()
+        );
+
+        return ResponseEntity.ok(
+                "Seat locked successfully"
+        );
+    }
+
+    @PostMapping("/confirm")
+    public ResponseEntity<String> confirmSeat(
+            @RequestBody SeatReservationRequest request) {
+
+        seatService.confirmSeat(
+                request.getFlightId(),
+                request.getSeatNumber()
+        );
+
+        return ResponseEntity.ok(
+                "Seat confirmed successfully"
+        );
+    }
 }

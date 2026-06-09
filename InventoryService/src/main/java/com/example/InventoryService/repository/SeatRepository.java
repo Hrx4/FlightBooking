@@ -13,7 +13,7 @@ public interface SeatRepository
 
     List<Seat> findByFlightId(String flightId);
 
-    Optional<Seat> findByFlightIdAndSeatNumber(
+    Optional<Seat> findByFlight_IdAndSeatNumber(
             String flightId,
             String seatNumber
     );
