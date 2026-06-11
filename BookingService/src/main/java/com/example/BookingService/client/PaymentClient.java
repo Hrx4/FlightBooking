@@ -2,6 +2,8 @@ package com.example.BookingService.client;
 
 import com.example.BookingService.client.dto.PaymentRequest;
 import com.example.BookingService.client.dto.PaymentResponse;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -15,13 +17,34 @@ public class PaymentClient {
     private static final String BASE_URL =
             "http://localhost:8084/api/payments";
 
+    @Retry(name = "paymentRetry")
+    @CircuitBreaker(
+            name = "paymentCircuit",
+            fallbackMethod = "paymentFallback"
+    )
     public PaymentResponse processPayment(
             PaymentRequest request) {
-
         return restTemplate.postForObject(
                 BASE_URL + "/process",
                 request,
                 PaymentResponse.class
         );
+    }
+
+
+    public PaymentResponse paymentFallback(
+            PaymentRequest request,
+            Exception ex) {
+
+        PaymentResponse response =
+                new PaymentResponse();
+
+        response.setStatus("FAILED");
+
+        response.setMessage(
+                "Payment Service Unavailable"
+        );
+
+        return response;
     }
 }

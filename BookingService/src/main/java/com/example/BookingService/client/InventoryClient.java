@@ -1,5 +1,7 @@
 package com.example.BookingService.client;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -13,8 +15,13 @@ public class InventoryClient {
     private final RestTemplate restTemplate;
 
     private static final String BASE_URL =
-            "http://localhost:8083/api/seats";
+            "http://localhost:8082/api/seats";
 
+    @Retry(name = "inventoryRetry")
+    @CircuitBreaker(
+            name = "inventoryCircuit",
+            fallbackMethod = "inventoryFallback"
+    )
     public void lockSeat(
             String flightId,
             String seatNumber) {
@@ -40,6 +47,16 @@ public class InventoryClient {
                         "seatNumber", seatNumber
                 ),
                 String.class
+        );
+    }
+
+    public void inventoryFallback(
+            String flightId,
+            String seatNumber,
+            Exception ex) {
+
+        throw new RuntimeException(
+                "Inventory Service Unavailable"
         );
     }
 

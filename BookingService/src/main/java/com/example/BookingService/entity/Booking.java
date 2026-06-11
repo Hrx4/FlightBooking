@@ -29,6 +29,12 @@ public class Booking {
 
     private BigDecimal amount;
 
+    @Column(
+            unique = true,
+            nullable = false
+    )
+    private String idempotencyKey;
+
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
 

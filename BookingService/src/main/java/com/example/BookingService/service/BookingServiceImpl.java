@@ -13,6 +13,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,12 +28,23 @@ public class BookingServiceImpl implements BookingService {
 
     private final PaymentClient paymentClient;
 
+
+
     @Override
     public BookingResponse createBooking(
             String userId,
             CreateBookingRequest request) {
 
+        Optional<Booking> existingBooking =
+                bookingRepository
+                        .findByIdempotencyKey(
+                                request.getIdempotencyKey()
+                        );
+
         Booking booking = Booking.builder()
+                .idempotencyKey(
+                        request.getIdempotencyKey()
+                )
                 .userId(userId)
                 .flightId(request.getFlightId())
                 .seatNumber(request.getSeatNumber())
@@ -79,7 +94,7 @@ public class BookingServiceImpl implements BookingService {
                     paymentClient.processPayment(
                             paymentRequest
                     );
-
+            System.out.println( "PaymentResponse : " + paymentResponse.toString());
             if(!"SUCCESS".equals(
                     paymentResponse.getStatus())) {
 
@@ -180,4 +195,20 @@ public class BookingServiceImpl implements BookingService {
                         "Booking Found")
                 .build();
     }
+
+    @Override
+    public List<BookingResponse> getBookings(String bookingId) {
+        List<Booking> bookings = bookingRepository.findByUserId(
+                bookingId);
+        System.out.println("bookings : " + bookings);
+        return bookings.stream()
+                .map(booking -> BookingResponse.builder()
+                        .bookingId(booking.getId())
+                        .status(booking.getStatus())
+                        .message("Booking Found")
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+
 }

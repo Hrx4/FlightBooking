@@ -7,11 +7,13 @@ grpc:
 
 spring:
   datasource:
-    #    url: jdbc:postgresql://localhost:5432/inventory_db
-    url: jdbc:postgresql://ep-square-leaf-aonacrdd-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?user=neondb_owner&password=npg_nSxw26BHZNUe&sslmode=require&channelBinding=require
-    username: postgres
-    password: postgres
-
+    url: jdbc:postgresql://localhost:5432/payment_service_db?TimeZone=UTC
+    username: admin
+    password: password
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect

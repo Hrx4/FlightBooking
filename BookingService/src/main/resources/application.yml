@@ -1,0 +1,57 @@
+server:
+  port: 8081
+
+grpc:
+  server:
+    port: 9090
+
+resilience4j:
+
+  retry:
+
+    instances:
+
+      paymentRetry:
+
+        max-attempts: 3
+
+        wait-duration: 2s
+
+      inventoryRetry:
+
+        max-attempts: 3
+
+        wait-duration: 1s
+
+  circuitbreaker:
+
+    instances:
+
+      paymentCircuit:
+
+        sliding-window-size: 10
+
+        failure-rate-threshold: 50
+
+        wait-duration-in-open-state: 30s
+
+      inventoryCircuit:
+
+        sliding-window-size: 10
+
+        failure-rate-threshold: 50
+
+        wait-duration-in-open-state: 30s
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/booking_service_db?TimeZone=UTC
+    username: admin
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
