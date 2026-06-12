@@ -12,7 +12,13 @@
         </processorPath>
         <module name="InventoryService" />
       </profile>
-      <profile name="Annotation profile for PaymentService" enabled="true">
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="proto-contracts" />
+      </profile>
+      <profile name="Annotation profile for BookingService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -23,12 +29,6 @@
         <module name="BookingService" />
         <module name="PaymentService" />
         <module name="AuthService" />
-      </profile>
-      <profile name="Maven default annotation processors profile" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <module name="proto-contracts" />
       </profile>
     </annotationProcessing>
   </component>

@@ -8,6 +8,8 @@ import com.example.BookingService.dto.BookingResponse;
 import com.example.BookingService.dto.CreateBookingRequest;
 import com.example.BookingService.entity.Booking;
 import com.example.BookingService.entity.BookingStatus;
+import com.example.BookingService.kafka.event.BookingCreatedEvent;
+import com.example.BookingService.kafka.producer.BookingProducer;
 import com.example.BookingService.repository.BookingRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,9 @@ public class BookingServiceImpl implements BookingService {
     private final InventoryClient inventoryClient;
 
     private final PaymentClient paymentClient;
+
+    private final BookingProducer bookingProducer;
+
 
 
 
@@ -139,6 +144,21 @@ public class BookingServiceImpl implements BookingService {
             );
 
             bookingRepository.save(booking);
+
+            bookingProducer.publish(
+                    BookingCreatedEvent.builder()
+                            .bookingId(
+                                    booking.getId())
+                            .flightId(
+                                    booking.getFlightId())
+                            .seatNumber(
+                                    booking.getSeatNumber())
+                            .userId(
+                                    booking.getUserId())
+                            .amount(
+                                    booking.getAmount())
+                            .build()
+            );
 
             return BookingResponse.builder()
                     .bookingId(
