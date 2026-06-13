@@ -6,6 +6,8 @@
     <file url="file://$PROJECT_DIR$/InventoryService/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/NotificationService/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/PaymentService/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SharedEvents/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SharedEvents/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/proto-contracts/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/proto-contracts/src/main/resources" charset="UTF-8" />
   </component>

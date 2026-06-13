@@ -3,7 +3,7 @@ server:
 
 grpc:
   server:
-    port: 9092
+    port: 9093
 
 spring:
   datasource:
@@ -17,3 +17,24 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      group-id: payment-group
+
+      auto-offset-reset: earliest
+
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      properties:
+        spring.json.trusted.packages: "org.example.sharedevents"
+
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      spring.json.type.mapping: "paymentFailed:org.example.sharedevents.PaymentFailedEvent,paymentCompleted:org.example.sharedevents.PaymentSuccessEvent"
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer

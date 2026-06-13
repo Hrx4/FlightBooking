@@ -1,4 +1,4 @@
-package com.example.BookingService.kafka.event;
+package org.example.sharedevents;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class BookingCreatedEvent {
+public class PaymentFailedEvent {
 
     private String bookingId;
 
@@ -22,5 +22,6 @@ public class BookingCreatedEvent {
     private String userId;
 
     private BigDecimal amount;
-}
 
+    private String reason;
+}

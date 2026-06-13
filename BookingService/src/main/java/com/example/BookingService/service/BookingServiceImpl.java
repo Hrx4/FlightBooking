@@ -8,13 +8,17 @@ import com.example.BookingService.dto.BookingResponse;
 import com.example.BookingService.dto.CreateBookingRequest;
 import com.example.BookingService.entity.Booking;
 import com.example.BookingService.entity.BookingStatus;
-import com.example.BookingService.kafka.event.BookingCreatedEvent;
 import com.example.BookingService.kafka.producer.BookingProducer;
+import com.example.BookingService.outbox.entity.OutboxEvent;
+import com.example.BookingService.outbox.repository.OutboxRepository;
 import com.example.BookingService.repository.BookingRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.sharedevents.BookingCreatedEvent;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,6 +35,10 @@ public class BookingServiceImpl implements BookingService {
     private final PaymentClient paymentClient;
 
     private final BookingProducer bookingProducer;
+
+    private final ObjectMapper objectMapper;
+
+    private final OutboxRepository outboxRepository;
 
 
 
@@ -73,7 +81,7 @@ public class BookingServiceImpl implements BookingService {
             booking.setStatus(
                     BookingStatus.SEAT_LOCKED
             );
-
+            System.out.println("booking : " + booking);
             bookingRepository.save(booking);
 
             /*
@@ -145,7 +153,7 @@ public class BookingServiceImpl implements BookingService {
 
             bookingRepository.save(booking);
 
-            bookingProducer.publish(
+            BookingCreatedEvent event =
                     BookingCreatedEvent.builder()
                             .bookingId(
                                     booking.getId())
@@ -157,6 +165,25 @@ public class BookingServiceImpl implements BookingService {
                                     booking.getUserId())
                             .amount(
                                     booking.getAmount())
+                            .build();
+
+            String payload =
+                    objectMapper
+                            .writeValueAsString(
+                                    event
+                            );
+
+            outboxRepository.save(
+                    OutboxEvent.builder()
+                            .aggregateId(
+                                    booking.getId())
+                            .eventType(
+                                    "BOOKING_CREATED")
+                            .payload(
+                                    payload)
+                            .processed(false)
+                            .createdAt(
+                                    LocalDateTime.now())
                             .build()
             );
 

@@ -19,7 +19,7 @@ public interface SeatService {
             String seatNumber
     );
 
-    public void lockSeat(
+    void lockSeat(
             String flightId,
             String seatNumber);
 

@@ -136,6 +136,7 @@ public class SeatServiceImpl implements SeatService {
                         new SeatNotFoundException(
                                 "Seat not found"
                         ));
+        System.out.println("Seat is locked : " + seat.getSeatNumber() +" "+ seat.getStatus());
 
         if(seat.getStatus() != SeatStatus.AVAILABLE) {
             throw new SeatAlreadyBookedException(
