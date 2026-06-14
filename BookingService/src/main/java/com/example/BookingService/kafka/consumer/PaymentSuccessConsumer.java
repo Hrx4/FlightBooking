@@ -42,7 +42,7 @@ public class PaymentSuccessConsumer {
                                 event.getSeatNumber())
                         .build()
         );
-
+        booking.setStatus(BookingStatus.CONFIRMED);
         bookingRepository.save(booking);
 
         System.out.println(

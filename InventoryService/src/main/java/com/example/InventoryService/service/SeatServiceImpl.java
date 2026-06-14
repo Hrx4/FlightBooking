@@ -88,7 +88,7 @@ public class SeatServiceImpl implements SeatService {
                 );
             }
 
-            seat.setStatus(SeatStatus.BOOKED);
+            seat.setStatus(SeatStatus.LOCKED);
 
             seatRepository.save(seat);
 
@@ -105,7 +105,7 @@ public class SeatServiceImpl implements SeatService {
     public void releaseSeat(
             String flightId,
             String seatNumber) {
-
+        System.out.println("Releasing seat " + seatNumber + " from flight " + flightId);
         Seat seat = seatRepository
                 .findByFlight_IdAndSeatNumber(
                         flightId,
@@ -117,6 +117,7 @@ public class SeatServiceImpl implements SeatService {
                         ));
 
         seat.setStatus(SeatStatus.AVAILABLE);
+        System.out.println("Released seat " + seatNumber + " from flight " + flightId);
 
         seatRepository.save(seat);
     }
@@ -126,6 +127,7 @@ public class SeatServiceImpl implements SeatService {
     public void lockSeat(
             String flightId,
             String seatNumber) {
+        System.out.println("Locking seat " + seatNumber + " from flight " + flightId);
 
         Seat seat = seatRepository
                 .findByFlight_IdAndSeatNumber(
@@ -154,6 +156,7 @@ public class SeatServiceImpl implements SeatService {
     public void confirmSeat(
             String flightId,
             String seatNumber) {
+        System.out.println("Confirming seat " + seatNumber + " from flight " + flightId);
 
         Seat seat = seatRepository
                 .findByFlight_IdAndSeatNumber(
@@ -164,6 +167,8 @@ public class SeatServiceImpl implements SeatService {
                         new SeatNotFoundException(
                                 "Seat not found"
                         ));
+
+        System.out.println("\nSeat is confirmed :" +  seat.getSeatNumber() + "Status : " + seat.getStatus()+ "\n");
 
         if(seat.getStatus() != SeatStatus.LOCKED) {
 

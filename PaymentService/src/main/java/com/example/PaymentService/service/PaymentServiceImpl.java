@@ -24,8 +24,8 @@ public class PaymentServiceImpl
             PaymentRequest request) {
 
         boolean success =
-//                true;
-                new Random().nextBoolean();
+                true;
+//                new Random().nextBoolean();
 
         Payment payment =
                 Payment.builder()

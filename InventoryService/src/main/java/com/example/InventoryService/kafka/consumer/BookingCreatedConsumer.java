@@ -31,11 +31,11 @@ public class BookingCreatedConsumer {
         try{
 
 
-//            seatService.lockSeat(
-//                    event.getFlightId(),
-//                    event.getSeatNumber()
-//            );
-        System.out.println("After Seat lock : " );
+            seatService.lockSeat(
+                    event.getFlightId(),
+                    event.getSeatNumber()
+            );
+        System.out.println("After Seat lock : " + event.getSeatNumber() );
 
             seatLockedProducer.publish(
                     SeatLockedEvent.builder()

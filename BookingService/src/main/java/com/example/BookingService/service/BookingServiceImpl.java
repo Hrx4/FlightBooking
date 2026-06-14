@@ -43,6 +43,7 @@ public class BookingServiceImpl implements BookingService {
 
 
 
+
     @Override
     public BookingResponse createBooking(
             String userId,
@@ -69,89 +70,7 @@ public class BookingServiceImpl implements BookingService {
 
         try {
 
-            /*
-             * STEP 1
-             * Lock Seat
-             */
-            inventoryClient.lockSeat(
-                    request.getFlightId(),
-                    request.getSeatNumber()
-            );
 
-            booking.setStatus(
-                    BookingStatus.SEAT_LOCKED
-            );
-            System.out.println("booking : " + booking);
-            bookingRepository.save(booking);
-
-            /*
-             * STEP 2
-             * Process Payment
-             */
-            PaymentRequest paymentRequest =
-                    new PaymentRequest();
-
-            paymentRequest.setBookingId(
-                    booking.getId()
-            );
-
-            paymentRequest.setUserId(
-                    userId
-            );
-
-            paymentRequest.setAmount(
-                    request.getAmount()
-            );
-
-            PaymentResponse paymentResponse =
-                    paymentClient.processPayment(
-                            paymentRequest
-                    );
-            System.out.println( "PaymentResponse : " + paymentResponse.toString());
-            if(!"SUCCESS".equals(
-                    paymentResponse.getStatus())) {
-
-                inventoryClient.releaseSeat(
-                        request.getFlightId(),
-                        request.getSeatNumber()
-                );
-
-                booking.setStatus(
-                        BookingStatus.CANCELLED
-                );
-
-                bookingRepository.save(booking);
-
-                return BookingResponse.builder()
-                        .bookingId(
-                                booking.getId())
-                        .status(
-                                BookingStatus.CANCELLED)
-                        .message(
-                                "Payment Failed")
-                        .build();
-            }
-
-            booking.setStatus(
-                    BookingStatus.PAYMENT_COMPLETED
-            );
-
-            bookingRepository.save(booking);
-
-            /*
-             * STEP 3
-             * Confirm Seat
-             */
-            inventoryClient.confirmSeat(
-                    request.getFlightId(),
-                    request.getSeatNumber()
-            );
-
-            booking.setStatus(
-                    BookingStatus.CONFIRMED
-            );
-
-            bookingRepository.save(booking);
 
             BookingCreatedEvent event =
                     BookingCreatedEvent.builder()
@@ -191,9 +110,9 @@ public class BookingServiceImpl implements BookingService {
                     .bookingId(
                             booking.getId())
                     .status(
-                            BookingStatus.CONFIRMED)
+                            BookingStatus.PENDING)
                     .message(
-                            "Booking Confirmed")
+                            "Booking currently processing ....")
                     .build();
 
         } catch (Exception ex) {

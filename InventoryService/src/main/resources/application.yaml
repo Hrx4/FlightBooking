@@ -5,6 +5,12 @@ grpc:
   server:
     port: 9091
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/inventory_service_db?TimeZone=UTC
