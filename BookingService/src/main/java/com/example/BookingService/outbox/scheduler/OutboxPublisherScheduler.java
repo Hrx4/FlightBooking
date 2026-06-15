@@ -33,22 +33,18 @@ public class OutboxPublisherScheduler {
 
         for(OutboxEvent event : events) {
 
-            if("BOOKING_CREATED".equals(
-                    event.getEventType())) {
+            try {
+                if ("BOOKING_CREATED".equals(event.getEventType())) {
+                    BookingCreatedEvent bookingEvent = objectMapper.readValue(
+                            event.getPayload(), BookingCreatedEvent.class);
 
-                BookingCreatedEvent bookingEvent =
-                        objectMapper.readValue(
-                                event.getPayload(),
-                                BookingCreatedEvent.class
-                        );
+                    bookingProducer.publish(bookingEvent);
 
-                bookingProducer.publish(
-                        bookingEvent
-                );
-
-                event.setProcessed(true);
-
-                outboxRepository.save(event);
+                    event.setProcessed(true);
+                    outboxRepository.save(event);
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to publish outbox event " + event.getId() + ": " + e.getMessage());
             }
         }
     }

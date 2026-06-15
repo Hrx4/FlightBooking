@@ -1,13 +1,10 @@
 package com.example.BookingService.service;
 
-import com.example.BookingService.client.InventoryClient;
-import com.example.BookingService.client.PaymentClient;
-import com.example.BookingService.client.dto.PaymentRequest;
-import com.example.BookingService.client.dto.PaymentResponse;
 import com.example.BookingService.dto.BookingResponse;
 import com.example.BookingService.dto.CreateBookingRequest;
 import com.example.BookingService.entity.Booking;
 import com.example.BookingService.entity.BookingStatus;
+import com.example.BookingService.grpc.InventoryGrpcClient;
 import com.example.BookingService.kafka.producer.BookingProducer;
 import com.example.BookingService.outbox.entity.OutboxEvent;
 import com.example.BookingService.outbox.repository.OutboxRepository;
@@ -30,9 +27,8 @@ public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
 
-    private final InventoryClient inventoryClient;
+    private final InventoryGrpcClient inventoryGrpcClient;
 
-    private final PaymentClient paymentClient;
 
     private final BookingProducer bookingProducer;
 
@@ -43,22 +39,29 @@ public class BookingServiceImpl implements BookingService {
 
 
 
-
     @Override
-    public BookingResponse createBooking(
-            String userId,
-            CreateBookingRequest request) {
+    public BookingResponse createBooking(String userId, CreateBookingRequest request) {
 
-        Optional<Booking> existingBooking =
-                bookingRepository
-                        .findByIdempotencyKey(
-                                request.getIdempotencyKey()
-                        );
+        // 1. Idempotency check first
+        System.out.println("check existing booking");
+        Optional<Booking> existingBooking = bookingRepository.findByIdempotencyKey(request.getIdempotencyKey());
+        if (existingBooking.isPresent()) {
+            Booking existing = existingBooking.get();
+            return BookingResponse.builder()
+                    .bookingId(existing.getId())
+                    .status(existing.getStatus())
+                    .message("Duplicate request - booking already exists")
+                    .build();
+        }
+        System.out.println("existingBooking" + existingBooking);
 
+        // 2. Lock the seat via gRPC BEFORE creating the booking
+        boolean locked = inventoryGrpcClient.lockSeat(request.getFlightId(), request.getSeatNumber());
+
+
+        // 3. Now create the booking
         Booking booking = Booking.builder()
-                .idempotencyKey(
-                        request.getIdempotencyKey()
-                )
+                .idempotencyKey(request.getIdempotencyKey())
                 .userId(userId)
                 .flightId(request.getFlightId())
                 .seatNumber(request.getSeatNumber())
@@ -68,78 +71,56 @@ public class BookingServiceImpl implements BookingService {
 
         bookingRepository.save(booking);
 
+        if (!locked) {
+            booking.setStatus(BookingStatus.CANCELLED);
+            bookingRepository.save(booking);
+            return BookingResponse.builder()
+                    .bookingId(booking.getId())
+                    .status(BookingStatus.CANCELLED)
+                    .message("Seat unavailable")
+                    .build();
+        }
+
         try {
+            BookingCreatedEvent event = BookingCreatedEvent.builder()
+                    .bookingId(booking.getId())
+                    .flightId(booking.getFlightId())
+                    .seatNumber(booking.getSeatNumber())
+                    .userId(booking.getUserId())
+                    .amount(booking.getAmount())
+                    .build();
 
-
-
-            BookingCreatedEvent event =
-                    BookingCreatedEvent.builder()
-                            .bookingId(
-                                    booking.getId())
-                            .flightId(
-                                    booking.getFlightId())
-                            .seatNumber(
-                                    booking.getSeatNumber())
-                            .userId(
-                                    booking.getUserId())
-                            .amount(
-                                    booking.getAmount())
-                            .build();
-
-            String payload =
-                    objectMapper
-                            .writeValueAsString(
-                                    event
-                            );
+            String payload = objectMapper.writeValueAsString(event);
 
             outboxRepository.save(
                     OutboxEvent.builder()
-                            .aggregateId(
-                                    booking.getId())
-                            .eventType(
-                                    "BOOKING_CREATED")
-                            .payload(
-                                    payload)
+                            .aggregateId(booking.getId())
+                            .eventType("BOOKING_CREATED")
+                            .payload(payload)
                             .processed(false)
-                            .createdAt(
-                                    LocalDateTime.now())
+                            .createdAt(LocalDateTime.now())
                             .build()
             );
 
             return BookingResponse.builder()
-                    .bookingId(
-                            booking.getId())
-                    .status(
-                            BookingStatus.PENDING)
-                    .message(
-                            "Booking currently processing ....")
+                    .bookingId(booking.getId())
+                    .status(BookingStatus.PENDING)
+                    .message("Booking currently processing ....")
                     .build();
 
         } catch (Exception ex) {
 
+            // 4. If outbox/Kafka setup fails, release the seat and cancel
             try {
+                inventoryGrpcClient.releaseSeat(request.getFlightId(), request.getSeatNumber());
+            } catch (Exception ignored) {}
 
-                inventoryClient.releaseSeat(
-                        request.getFlightId(),
-                        request.getSeatNumber()
-                );
-
-            } catch (Exception ignored) {
-            }
-
-            booking.setStatus(
-                    BookingStatus.CANCELLED
-            );
-
+            booking.setStatus(BookingStatus.CANCELLED);
             bookingRepository.save(booking);
 
-            throw new RuntimeException(
-                    "Booking Failed",
-                    ex
-            );
+            throw new RuntimeException("Booking Failed", ex);
         }
     }
-
     @Override
     public BookingResponse getBooking(
             String bookingId) {

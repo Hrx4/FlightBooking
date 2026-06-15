@@ -2,6 +2,7 @@ package com.example.BookingService.kafka.consumer;
 
 import com.example.BookingService.entity.Booking;
 import com.example.BookingService.entity.BookingStatus;
+import com.example.BookingService.metrics.BookingMetrics;
 import com.example.BookingService.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.example.sharedevents.PaymentFailedEvent;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class PaymentFailedConsumer {
 
     private final BookingRepository bookingRepository;
+    private final BookingMetrics bookingMetrics;
 
     @KafkaListener(
             topics = "payment-failed",
@@ -37,5 +39,6 @@ public class PaymentFailedConsumer {
         System.out.println(
                 "Booking Cancelled"
         );
+        bookingMetrics.bookingFailure();
     }
 }

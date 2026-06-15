@@ -3,6 +3,7 @@ package com.example.BookingService.kafka.consumer;
 import com.example.BookingService.entity.Booking;
 import com.example.BookingService.entity.BookingStatus;
 import com.example.BookingService.kafka.producer.BookingConfirmedProducer;
+import com.example.BookingService.metrics.BookingMetrics;
 import com.example.BookingService.repository.BookingRepository;
 import com.example.BookingService.service.BookingService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class PaymentSuccessConsumer {
 
     private final BookingRepository bookingRepository;
     private final BookingConfirmedProducer  bookingConfirmedProducer;
+    private final BookingMetrics bookingMetrics;
 
     @KafkaListener(
             topics = "payment-success",
@@ -48,5 +50,6 @@ public class PaymentSuccessConsumer {
         System.out.println(
                 "Booking Confirmed"
         );
+        bookingMetrics.bookingSuccess();
     }
 }
