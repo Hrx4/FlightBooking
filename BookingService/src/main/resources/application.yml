@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8082
 
 management:
   endpoints:
@@ -47,14 +47,16 @@ resilience4j:
 
 spring:
   grpc:
+    inventory-host: localhost
+    inventory-port: 9091
     client:
       channels:
         inventory-service:
-          address: static://localhost:9091
+          address: dns:///inventory-service:9091
           negotiation-type: plaintext # use TLS in prod
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/booking_service_db?TimeZone=UTC
+    url: jdbc:postgresql://postgres:5432/booking_service_db?TimeZone=UTC
     username: admin
     password: password
     driver-class-name: org.postgresql.Driver
@@ -65,6 +67,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   kafka:
+    bootstrap-servers: kafka:29092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
