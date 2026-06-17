@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: inventory-service
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           image: inventory-service:latest
           ports:
             - containerPort: 8083
@@ -29,4 +29,4 @@ spec:
             - name: SPRING_DATASOURCE_PASSWORD
               value: password
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              value: kafka:29092
+              value: kafka:9092
