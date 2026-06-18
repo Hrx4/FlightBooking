@@ -14,6 +14,36 @@ pipeline {
             }
         }
 
+        stage('Build Jars') {
+            steps {
+                dir('AuthService') {
+                    sh 'mvn clean package -DskipTests'
+                }
+
+                dir('BookingService') {
+                    sh 'mvn clean package -DskipTests'
+                }
+
+                dir('InventoryService') {
+                    sh 'mvn clean package -DskipTests'
+                }
+
+                dir('PaymentService') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Test Kubernetes') {
+            steps {
+                sh 'echo "Current Context:"'
+                sh 'kubectl config current-context'
+
+                sh 'echo "Cluster Nodes:"'
+                sh 'kubectl get nodes'
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
                 sh 'docker build -t hrx4/auth-service:latest ./AuthService'
@@ -25,12 +55,22 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+
                     sh 'docker push hrx4/auth-service:latest'
                     sh 'docker push hrx4/booking-service:latest'
                     sh 'docker push hrx4/inventory-service:latest'
                     sh 'docker push hrx4/payment-service:latest'
+
+                    sh 'docker logout'
                 }
             }
         }
@@ -43,12 +83,23 @@ pipeline {
                 sh 'kubectl apply -f k8s/booking/'
                 sh 'kubectl apply -f k8s/inventory/'
                 sh 'kubectl apply -f k8s/payment/'
+
+                sh 'kubectl rollout restart deployment auth-service || true'
+                sh 'kubectl rollout restart deployment booking-service || true'
+                sh 'kubectl rollout restart deployment inventory-service || true'
+                sh 'kubectl rollout restart deployment payment-service || true'
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                sh 'kubectl get pods'
+                sh 'echo "Deployments:"'
+                sh 'kubectl get deployments'
+
+                sh 'echo "Pods:"'
+                sh 'kubectl get pods -o wide'
+
+                sh 'echo "Services:"'
                 sh 'kubectl get services'
             }
         }
@@ -58,8 +109,13 @@ pipeline {
         success {
             echo '✅ Deployment successful!'
         }
+
         failure {
             echo '❌ Deployment failed! Check logs above.'
+        }
+
+        always {
+            cleanWs()
         }
     }
 }
