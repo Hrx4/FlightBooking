@@ -15,7 +15,7 @@ spec:
       containers:
         - name: inventory-service
           imagePullPolicy: IfNotPresent
-          image: inventory-service:latest
+          image: hrx4/inventory-service:latest
           ports:
             - containerPort: 8083
             - containerPort: 9091

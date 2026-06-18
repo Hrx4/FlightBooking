@@ -20,7 +20,7 @@ spec:
       containers:
         - name: payment-service
 
-          image: payment-service:latest
+          image: hrx4/payment-service:latest
 
           imagePullPolicy: IfNotPresent
 
