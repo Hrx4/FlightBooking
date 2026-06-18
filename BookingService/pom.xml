@@ -134,7 +134,8 @@
 				<artifactId>protobuf-maven-plugin</artifactId>
 				<version>4.0.3</version>
 				<configuration>
-					<protoc>${protobuf-java.version}</protoc>
+					<protocVersion>${protobuf-java.version}</protocVersion>
+<!--					<protoc>${protobuf-java.version}</protoc>-->
 					<binaryMavenPlugins>
 						<binaryMavenPlugin>
 							<groupId>io.grpc</groupId>

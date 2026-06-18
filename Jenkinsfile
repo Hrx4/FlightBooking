@@ -13,7 +13,20 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Hrx4/FlightBooking'
             }
         }
-
+        stage('Debug Workspace') {
+            steps {
+                sh 'pwd'
+                sh 'ls -la'
+                sh 'ls -la sharedevents'
+            }
+        }
+        stage('Build sharedevents') {
+            steps {
+                dir('sharedevents') {
+                    sh 'mvn clean install -DskipTests'
+                }
+            }
+        }
         stage('Build Jars') {
             steps {
                 dir('AuthService') {
@@ -21,7 +34,7 @@ pipeline {
                 }
 
                 dir('BookingService') {
-                    sh 'mvn clean package -DskipTests'
+                    sh 'mvn clean package -DskipTests -X'
                 }
 
                 dir('InventoryService') {
