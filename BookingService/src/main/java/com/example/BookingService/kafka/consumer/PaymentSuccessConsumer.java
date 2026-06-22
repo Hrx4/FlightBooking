@@ -36,6 +36,7 @@ public class PaymentSuccessConsumer {
 
         bookingConfirmedProducer.publish(
                 BookingConfirmedEvent.builder()
+                        .userId(event.getUserId())
                         .bookingId(
                                 event.getBookingId())
                         .flightId(

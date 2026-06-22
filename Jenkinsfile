@@ -29,6 +29,10 @@ pipeline {
         }
         stage('Build Jars') {
             steps {
+                dir('ApiGateway') {
+                    sh 'mvn clean package -DskipTests'
+                }
+
                 dir('AuthService') {
                     sh 'mvn clean package -DskipTests'
                 }
@@ -42,6 +46,10 @@ pipeline {
                 }
 
                 dir('PaymentService') {
+                    sh 'mvn clean package -DskipTests'
+                }
+
+                dir('NotificationService') {
                     sh 'mvn clean package -DskipTests'
                 }
             }
@@ -59,10 +67,12 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
+                sh 'docker build -t hrx4/api-gateway:latest ./ApiGateway'
                 sh 'docker build -t hrx4/auth-service:latest ./AuthService'
                 sh 'docker build -t hrx4/booking-service:latest ./BookingService'
                 sh 'docker build -t hrx4/inventory-service:latest ./InventoryService'
                 sh 'docker build -t hrx4/payment-service:latest ./PaymentService'
+                sh 'docker build -t hrx4/notification-service:latest ./NotificationService'
             }
         }
 
@@ -78,10 +88,12 @@ pipeline {
 
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
 
+                    sh 'docker push hrx4/api-gateway:latest'
                     sh 'docker push hrx4/auth-service:latest'
                     sh 'docker push hrx4/booking-service:latest'
                     sh 'docker push hrx4/inventory-service:latest'
                     sh 'docker push hrx4/payment-service:latest'
+                    sh 'docker push hrx4/notification-service:latest'
 
                     sh 'docker logout'
                 }
@@ -92,15 +104,19 @@ pipeline {
             steps {
                 sh 'kubectl apply -f k8s/postgres/'
                 sh 'kubectl apply -f k8s/kafka/'
+                sh 'kubectl apply -f k8s/apigateway/'
                 sh 'kubectl apply -f k8s/auth/'
                 sh 'kubectl apply -f k8s/booking/'
                 sh 'kubectl apply -f k8s/inventory/'
                 sh 'kubectl apply -f k8s/payment/'
+                sh 'kubectl apply -f k8s/notification/'
 
+                sh 'kubectl rollout restart deployment api-gateway || true'
                 sh 'kubectl rollout restart deployment auth-service || true'
                 sh 'kubectl rollout restart deployment booking-service || true'
                 sh 'kubectl rollout restart deployment inventory-service || true'
                 sh 'kubectl rollout restart deployment payment-service || true'
+                sh 'kubectl rollout restart deployment notification-service || true'
             }
         }
 

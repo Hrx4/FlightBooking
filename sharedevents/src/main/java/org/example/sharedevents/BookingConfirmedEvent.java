@@ -13,6 +13,8 @@ public class BookingConfirmedEvent {
 
     private String bookingId;
 
+    private String userId;
+
     private String flightId;
 
     private String seatNumber;

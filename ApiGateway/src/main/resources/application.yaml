@@ -1,0 +1,29 @@
+server:
+  port: 8080
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+              uri: http://auth-service:8081
+              predicates:
+                - Path=/api/auth/**
+            - id: booking-service
+              uri: http://booking-service:8082
+              predicates:
+                - Path=/api/bookings/**
+            - id: inventory-service
+              uri: http://inventory-service:8083
+              predicates:
+                - Path=/api/flights/**,/api/seats/**
+            - id: payment-service
+              uri: http://payment-service:8084
+              predicates:
+                - Path=/api/payments/**
+management:
+  endpoints:
+    web:
+      exposure:
+        include: gateway,health,info
