@@ -2,9 +2,11 @@ package com.example.BookingService.controller;
 
 import com.example.BookingService.dto.BookingResponse;
 import com.example.BookingService.dto.CreateBookingRequest;
+import com.example.BookingService.entity.Booking;
 import com.example.BookingService.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,16 +18,23 @@ public class BookingController {
 
     private final BookingService bookingService;
 
+    @GetMapping("/my")
+    public List<BookingResponse> myBookings(
+            Authentication authentication) {
+
+        String userId = authentication.getName();
+
+        return bookingService.getBookings(userId);
+    }
+
     @PostMapping
     public ResponseEntity<BookingResponse>
     createBooking(
             @RequestBody
-            CreateBookingRequest request) {
+            CreateBookingRequest request,
+            Authentication authentication) {
 
-        /*
-         * Later extract from JWT
-         */
-        String userId = "user-123";
+        String userId = authentication.getName();
 
         return ResponseEntity.ok(
                 bookingService.createBooking(
@@ -53,5 +62,20 @@ public class BookingController {
         return ResponseEntity.ok(
                 bookingService.getBookings(userId)
         );
+    }
+
+    @PostMapping("/{bookingId}/cancel")
+    public ResponseEntity<Void> cancelBooking(
+            @PathVariable String bookingId,
+            Authentication authentication) {
+
+        String userId =
+                authentication.getName();
+
+        bookingService.cancelBooking(
+                bookingId,
+                userId);
+
+        return ResponseEntity.ok().build();
     }
 }

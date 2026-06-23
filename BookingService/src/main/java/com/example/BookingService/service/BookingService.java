@@ -21,5 +21,10 @@ public interface BookingService {
              String bookingId
     );
 
+    void cancelBooking(
+            String bookingId,
+            String userId
+    );
+
 
 }

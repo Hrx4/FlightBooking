@@ -1,10 +1,12 @@
 package com.example.BookingService.outbox.scheduler;
 
+import com.example.BookingService.kafka.producer.BookingCancelledProducer;
 import com.example.BookingService.kafka.producer.BookingProducer;
 import com.example.BookingService.outbox.entity.OutboxEvent;
 import com.example.BookingService.outbox.repository.OutboxRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.sharedevents.BookingCancelledEvent;
 import org.example.sharedevents.BookingCreatedEvent;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,10 @@ public class OutboxPublisherScheduler {
 
     private final BookingProducer bookingProducer;
 
+    private final BookingCancelledProducer bookingCancelledProducer;
+
+    private final BookingCancelledEvent bookingCancelledEvent;
+
     private final ObjectMapper objectMapper;
 
     @Scheduled(fixedDelay = 5000)
@@ -34,7 +40,7 @@ public class OutboxPublisherScheduler {
         for(OutboxEvent event : events) {
 
             try {
-                if ("BOOKING_CREATED".equals(event.getEventType())) {
+                if ("BOOKING_CREATED".equalsIgnoreCase(event.getEventType())) {
                     BookingCreatedEvent bookingEvent = objectMapper.readValue(
                             event.getPayload(), BookingCreatedEvent.class);
 
@@ -42,6 +48,16 @@ public class OutboxPublisherScheduler {
 
                     event.setProcessed(true);
                     outboxRepository.save(event);
+                }
+                else if ("BOOKING_CANCELLED"
+                        .equalsIgnoreCase(event.getEventType())) {
+
+                    BookingCancelledEvent cancelledEvent =
+                            objectMapper.readValue(
+                                    event.getPayload(),
+                                    BookingCancelledEvent.class);
+
+                    bookingCancelledProducer.publish(cancelledEvent);
                 }
             } catch (Exception e) {
                 System.err.println("Failed to publish outbox event " + event.getId() + ": " + e.getMessage());

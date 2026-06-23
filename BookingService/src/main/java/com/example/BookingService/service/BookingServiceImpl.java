@@ -11,6 +11,7 @@ import com.example.BookingService.outbox.repository.OutboxRepository;
 import com.example.BookingService.repository.BookingRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.sharedevents.BookingCancelledEvent;
 import org.example.sharedevents.BookingCreatedEvent;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
@@ -144,9 +145,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponse> getBookings(String bookingId) {
+    public List<BookingResponse> getBookings(String userId) {
         List<Booking> bookings = bookingRepository.findByUserId(
-                bookingId);
+                userId);
         System.out.println("bookings : " + bookings);
         return bookings.stream()
                 .map(booking -> BookingResponse.builder()
@@ -155,6 +156,61 @@ public class BookingServiceImpl implements BookingService {
                         .message("Booking Found")
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void cancelBooking(
+            String bookingId,
+            String userId) {
+
+        Booking booking =
+                bookingRepository.findById(bookingId)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "Booking not found"));
+
+        if (!booking.getUserId().equals(userId)) {
+
+            throw new RuntimeException(
+                    "You do not own this booking");
+        }
+
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
+
+            throw new RuntimeException(
+                    "Only confirmed bookings can be cancelled");
+        }
+
+        booking.setStatus(
+                BookingStatus.CANCELLED);
+
+        bookingRepository.save(booking);
+
+        BookingCancelledEvent event =
+                BookingCancelledEvent.builder()
+                        .bookingId(
+                                booking.getId())
+                        .userId(
+                                booking.getUserId())
+                        .flightId(
+                                booking.getFlightId())
+                        .seatNumber(
+                                booking.getSeatNumber())
+                        .amount(
+                                booking.getAmount())
+                        .build();
+
+        String payload = objectMapper.writeValueAsString(event);
+
+        outboxRepository.save(
+                OutboxEvent.builder()
+                        .aggregateId(booking.getId())
+                        .eventType("BOOKING_CANCELLED")
+                        .payload(payload)
+                        .processed(false)
+                        .createdAt(LocalDateTime.now())
+                        .build()
+        );
     }
 
 
